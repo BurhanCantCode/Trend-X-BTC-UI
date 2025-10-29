@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import React from 'react';
 
 interface BinanceTickerProps {
   showFullPrice?: boolean;
 }
 
-export const BinanceTicker: React.FC<BinanceTickerProps> = ({ showFullPrice = false }) => {
+const BinanceTickerComponent: React.FC<BinanceTickerProps> = ({ showFullPrice = false }) => {
   const [tickerData, setTickerData] = useState<{
     price: string;
     priceChange: string;
@@ -97,4 +98,8 @@ export const BinanceTicker: React.FC<BinanceTickerProps> = ({ showFullPrice = fa
       </span>
     </div>
   );
-}; 
+};
+
+BinanceTickerComponent.displayName = 'BinanceTicker';
+
+export const BinanceTicker = React.memo(BinanceTickerComponent); 

@@ -12,7 +12,7 @@ const initialState: OrderFlowState = {
   trendPercentage: 25
 };
 
-export function OrderFlowTicker() {
+export const OrderFlowTicker = React.memo(function OrderFlowTicker() {
   const [orderFlow, setOrderFlow] = useState<OrderFlowState>(initialState);
 
   useEffect(() => {
@@ -96,4 +96,4 @@ export function OrderFlowTicker() {
       </span>
     </div>
   );
-} 
+}); 

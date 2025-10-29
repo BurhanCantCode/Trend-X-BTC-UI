@@ -16,7 +16,7 @@ interface ActiveAddressesProps {
   onDataUpdate?: (data: { trend: number; isPositive: boolean }) => void;
 }
 
-export function ActiveAddressesTicker({ onDataUpdate }: ActiveAddressesProps) {
+export const ActiveAddressesTicker = React.memo(function ActiveAddressesTicker({ onDataUpdate }: ActiveAddressesProps) {
   const [addressData, setAddressData] = useState<AddressState>(initialState);
   const onDataUpdateRef = useRef(onDataUpdate);
 
@@ -85,4 +85,4 @@ export function ActiveAddressesTicker({ onDataUpdate }: ActiveAddressesProps) {
       </span>
     </div>
   );
-} 
+}); 
