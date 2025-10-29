@@ -4,7 +4,7 @@ interface BinanceTickerProps {
   showFullPrice?: boolean;
 }
 
-const BinanceTickerComponent: React.FC<BinanceTickerProps> = ({ showFullPrice = false }) => {
+const BinanceTickerComponent = ({ showFullPrice = false }: BinanceTickerProps) => {
   const [tickerData, setTickerData] = useState<{
     price: string;
     priceChange: string;
