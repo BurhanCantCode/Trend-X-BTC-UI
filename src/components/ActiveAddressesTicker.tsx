@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 
 interface AddressState {
   count: number;
@@ -16,7 +16,7 @@ interface ActiveAddressesProps {
   onDataUpdate?: (data: { trend: number; isPositive: boolean }) => void;
 }
 
-export const ActiveAddressesTicker = React.memo(function ActiveAddressesTicker({ onDataUpdate }: ActiveAddressesProps) {
+export const ActiveAddressesTicker = memo(function ActiveAddressesTicker({ onDataUpdate }: ActiveAddressesProps) {
   const [addressData, setAddressData] = useState<AddressState>(initialState);
   const onDataUpdateRef = useRef(onDataUpdate);
 

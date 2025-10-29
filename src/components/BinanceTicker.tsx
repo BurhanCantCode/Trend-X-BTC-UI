@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import React from 'react';
+import { useState, useEffect, memo } from 'react';
 
 interface BinanceTickerProps {
   showFullPrice?: boolean;
@@ -102,4 +101,4 @@ const BinanceTickerComponent: React.FC<BinanceTickerProps> = ({ showFullPrice = 
 
 BinanceTickerComponent.displayName = 'BinanceTicker';
 
-export const BinanceTicker = React.memo(BinanceTickerComponent); 
+export const BinanceTicker = memo(BinanceTickerComponent); 

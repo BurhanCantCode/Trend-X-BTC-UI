@@ -1,5 +1,5 @@
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import React from 'react';
+import { memo } from 'react';
 
 interface BitcoinChartProps {
   data: {
@@ -11,7 +11,7 @@ interface BitcoinChartProps {
   }[] | null;
 }
 
-export const BitcoinChart = React.memo(function BitcoinChart({ data }: BitcoinChartProps) {
+export const BitcoinChart = memo(function BitcoinChart({ data }: BitcoinChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">

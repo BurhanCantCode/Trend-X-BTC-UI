@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 
 interface OrderFlowState {
   netFlow: number;
@@ -12,7 +12,7 @@ const initialState: OrderFlowState = {
   trendPercentage: 25
 };
 
-export const OrderFlowTicker = React.memo(function OrderFlowTicker() {
+export const OrderFlowTicker = memo(function OrderFlowTicker() {
   const [orderFlow, setOrderFlow] = useState<OrderFlowState>(initialState);
 
   useEffect(() => {
