@@ -20,19 +20,30 @@ function FloatingBitcoins() {
     const updateBitcoins = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const newBitcoins = Array.from({ length: 20 }, (_, i) => ({
+      // Reduced from 20 to 10 for better performance
+      const newBitcoins = Array.from({ length: 10 }, (_, i) => ({
         id: i,
         x: Math.random() * rect.width,
         y: Math.random() * rect.height,
         size: Math.random() * 20 + 10,
-        speed: Math.random() * 1 + 0.5,
+        speed: Math.random() * 2 + 1, // Slightly faster animation
       }));
       setBitcoins(newBitcoins);
     };
 
     updateBitcoins();
-    window.addEventListener('resize', updateBitcoins);
-    return () => window.removeEventListener('resize', updateBitcoins);
+    // Debounce resize events
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateBitcoins, 250);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimeout);
+    };
   }, []);
 
   return (

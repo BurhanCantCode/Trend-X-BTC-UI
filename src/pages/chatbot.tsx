@@ -191,12 +191,13 @@ const ChatMessage = ({ message, user, isTyping }: {
   const [showCitation, setShowCitation] = useState(false);
 
   useEffect(() => {
-    if (!message.isUser) {
+    if (!message.isUser && message.content) {
       setDisplayedContent('');
       
       const text = typeof message.content === 'string' ? message.content : '';
       if (!text) return;
       let currentIndex = 0;
+      let animationFrameId: number | null = null;
 
       const getRandomDelay = () => {
         const baseDelay = 5;
@@ -205,20 +206,21 @@ const ChatMessage = ({ message, user, isTyping }: {
       };
       
       const typeNextCharacter = () => {
-        setDisplayedContent(text.slice(0, currentIndex + 1));
-        currentIndex++;
-        
         if (currentIndex < text.length) {
-          setTimeout(typeNextCharacter, getRandomDelay());
+          setDisplayedContent(text.slice(0, currentIndex + 1));
+          currentIndex++;
+          animationFrameId = window.setTimeout(typeNextCharacter, getRandomDelay());
         }
       };
 
       typeNextCharacter();
 
       return () => {
-        setDisplayedContent('');
+        if (animationFrameId !== null) {
+          clearTimeout(animationFrameId);
+        }
       };
-    } else {
+    } else if (message.isUser) {
       setDisplayedContent(message.content);
     }
   }, [message.content, message.isUser]);

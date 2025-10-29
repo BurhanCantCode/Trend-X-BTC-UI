@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface AddressState {
   count: number;
@@ -18,6 +18,12 @@ interface ActiveAddressesProps {
 
 export function ActiveAddressesTicker({ onDataUpdate }: ActiveAddressesProps) {
   const [addressData, setAddressData] = useState<AddressState>(initialState);
+  const onDataUpdateRef = useRef(onDataUpdate);
+
+  // Keep ref updated with latest callback
+  useEffect(() => {
+    onDataUpdateRef.current = onDataUpdate;
+  }, [onDataUpdate]);
 
   useEffect(() => {
     const fetchAddressData = async () => {
@@ -42,7 +48,7 @@ export function ActiveAddressesTicker({ onDataUpdate }: ActiveAddressesProps) {
           };
 
           setAddressData(newData);
-          onDataUpdate?.({
+          onDataUpdateRef.current?.({
             trend: trendPercentage,
             isPositive: change >= 0
           });
@@ -56,7 +62,7 @@ export function ActiveAddressesTicker({ onDataUpdate }: ActiveAddressesProps) {
     const interval = setInterval(fetchAddressData, 300000);
 
     return () => clearInterval(interval);
-  }, [onDataUpdate]);
+  }, []); // Empty deps - callback accessed via ref
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
