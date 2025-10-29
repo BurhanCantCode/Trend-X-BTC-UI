@@ -106,9 +106,9 @@ export default function Dashboard() {
       console.error('Error fetching current price:', error);
       // Don't set currentPrice to null to maintain last known price
     }
-  }, []);
+  }, [setCurrentPrice]);
 
-  const formatPredictionData = (data: any[]) => {
+  const formatPredictionData = useCallback((data: any[]) => {
     console.log('Raw prediction data:', data); // Debug log
 
     return data.map(point => {
@@ -129,9 +129,9 @@ export default function Dashboard() {
       }
       return isValid;
     });
-  };
+  }, []);
 
-  const fetchPredictions = async (): Promise<PredictionResponse | null> => {
+  const fetchPredictions = useCallback(async (): Promise<PredictionResponse | null> => {
     try {
       const response = await fetch('/api/fetchPredictions');
       if (!response.ok) {
@@ -151,7 +151,7 @@ export default function Dashboard() {
       console.error('Error in fetchPredictions:', error);
       return null;
     }
-  };
+  }, [formatPredictionData]);
 
   // Fetch metrics on component mount and set up periodic fetching
   useEffect(() => {
@@ -159,14 +159,17 @@ export default function Dashboard() {
       try {
         setLoading(true); // Start loading
         
-        // Fetch all data in parallel
-        const [metricsResponse, predictionsResponse, priceData] = await Promise.all([
+        // Use Promise.allSettled to continue even if one request fails
+        const results = await Promise.allSettled([
           fetchMetrics(),
           fetchPredictions(),
           fetchCurrentPrice()
         ]);
 
         // Update states as soon as data is available
+        const metricsResponse = results[0].status === 'fulfilled' ? results[0].value : null;
+        const predictionsResponse = results[1].status === 'fulfilled' ? results[1].value : null;
+
         if (metricsResponse?.metrics) {
           setMetrics(metricsResponse.metrics);
         }
@@ -186,7 +189,7 @@ export default function Dashboard() {
     fetchData();
     const priceInterval = setInterval(fetchCurrentPrice, 30000);
     return () => clearInterval(priceInterval);
-  }, [fetchCurrentPrice]);
+  }, [fetchMetrics, fetchPredictions, fetchCurrentPrice]);
 
   // Generate stats array from metrics
   const stats = [

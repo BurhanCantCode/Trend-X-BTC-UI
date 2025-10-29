@@ -15,8 +15,21 @@ interface BTCMetrics {
   num_user_addresses: number;
 }
 
+// Cache for metrics data
+let metricsCache: {
+  data: any;
+  timestamp: number;
+} | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    // Check cache first
+    if (metricsCache && Date.now() - metricsCache.timestamp < CACHE_DURATION) {
+      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+      return res.status(200).json(metricsCache.data);
+    }
+
     const filePath = 'data/cleaned_data.csv';
     const metricsRef = ref(storage, filePath);
 
@@ -49,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const latestData = data[data.length - 1];
     const historicalData = data.slice(-48);
 
-    res.status(200).json({
+    const responseData = {
       metrics: latestData,
       historical: historicalData.map((entry) => ({
         time: new Date(entry.Date).toLocaleTimeString(),
@@ -57,7 +70,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         timestamp: new Date(entry.Date).getTime(),
       })),
       lastUpdated: latestData.Date,
-    });
+    };
+
+    // Update cache
+    metricsCache = {
+      data: responseData,
+      timestamp: Date.now()
+    };
+
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+    res.status(200).json(responseData);
   } catch (error) {
     console.error('Detailed error in fetch metrics:', {
       error,

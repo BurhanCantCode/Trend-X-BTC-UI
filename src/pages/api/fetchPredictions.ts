@@ -8,8 +8,21 @@ interface PredictionRow {
   'Predicted Close': string;
 }
 
+// Cache for prediction data
+let predictionsCache: {
+  data: any;
+  timestamp: number;
+} | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    // Check cache first
+    if (predictionsCache && Date.now() - predictionsCache.timestamp < CACHE_DURATION) {
+      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+      return res.status(200).json(predictionsCache.data);
+    }
+
     console.log('Attempting to fetch predictions from Firebase Storage');
     
     const fileRef = ref(storage, 'data/predictions.csv');
@@ -60,12 +73,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       price: parseFloat(row['Predicted Close']).toFixed(2)
     }));
 
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
-    res.status(200).json({
+    const responseData = {
       predictions,
       graphData,
       lastUpdated: new Date().toISOString()
-    });
+    };
+
+    // Update cache
+    predictionsCache = {
+      data: responseData,
+      timestamp: Date.now()
+    };
+
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+    res.status(200).json(responseData);
   } catch (error) {
     console.error('Detailed error in fetch predictions:', {
       error,

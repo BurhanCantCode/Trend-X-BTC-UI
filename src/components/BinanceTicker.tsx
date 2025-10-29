@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 
 interface BinanceTickerProps {
   showFullPrice?: boolean;
 }
 
-export const BinanceTicker: React.FC<BinanceTickerProps> = ({ showFullPrice = false }) => {
+const BinanceTickerComponent = ({ showFullPrice = false }: BinanceTickerProps) => {
   const [tickerData, setTickerData] = useState<{
     price: string;
     priceChange: string;
@@ -12,33 +12,66 @@ export const BinanceTicker: React.FC<BinanceTickerProps> = ({ showFullPrice = fa
   } | null>(null);
 
   useEffect(() => {
-    // Initial price fetch
-    fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
-      .then(response => response.json())
-      .then(data => {
-        if (data.price) {
-          setTickerData(prev => ({
-            ...prev,
-            price: data.price,
-            priceChange: '0',
-            priceChangePercent: '0'
-          }));
-        }
-      });
+    let ws: WebSocket | null = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
 
-    // WebSocket connection for real-time updates
-    const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
+    const connect = () => {
+      // Initial price fetch
+      fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
+        .then(response => response.json())
+        .then(data => {
+          if (data.price) {
+            setTickerData(prev => ({
+              ...prev,
+              price: data.price,
+              priceChange: '0',
+              priceChangePercent: '0'
+            }));
+          }
+        })
+        .catch(err => console.error('Failed to fetch initial price:', err));
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setTickerData({
-        price: data.c, // Current price
-        priceChange: data.p, // Price change
-        priceChangePercent: data.P, // Price change percent
-      });
+      // WebSocket connection for real-time updates
+      try {
+        ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          setTickerData({
+            price: data.c, // Current price
+            priceChange: data.p, // Price change
+            priceChangePercent: data.P, // Price change percent
+          });
+          reconnectAttempts = 0; // Reset on successful message
+        };
+
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+        };
+
+        ws.onclose = () => {
+          // Attempt reconnection with exponential backoff
+          if (reconnectAttempts < maxReconnectAttempts) {
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+            reconnectTimeout = setTimeout(() => {
+              reconnectAttempts++;
+              connect();
+            }, delay);
+          }
+        };
+      } catch (error) {
+        console.error('Failed to create WebSocket:', error);
+      }
     };
 
-    return () => ws.close();
+    connect();
+
+    return () => {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (ws) ws.close();
+    };
   }, []);
 
   if (!tickerData) return <div>Loading...</div>;
@@ -64,4 +97,8 @@ export const BinanceTicker: React.FC<BinanceTickerProps> = ({ showFullPrice = fa
       </span>
     </div>
   );
-}; 
+};
+
+BinanceTickerComponent.displayName = 'BinanceTicker';
+
+export const BinanceTicker = memo(BinanceTickerComponent); 

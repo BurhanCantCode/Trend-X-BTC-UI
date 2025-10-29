@@ -258,62 +258,37 @@ function EnhancedBitcoinModel() {
           <meshPhysicalMaterial {...commonMaterial} />
         </mesh>
 
-        {/* Update lighting */}
+        {/* Optimized lighting - Consolidated from multiple lights */}
         <group>
           <pointLight 
             position={[3, 3, 3]} 
-            intensity={0.8}
+            intensity={1.2}
             color="#FFFFFF"
             distance={10}
             castShadow
           />
           <pointLight 
             position={[-3, -3, -3]} 
-            intensity={0.8}
+            intensity={1.2}
             color="#FFFFFF"
             distance={10}
-            castShadow
-          />
-          <spotLight
-            position={[0, 0, 5]}
-            angle={0.5}
-            penumbra={1}
-            intensity={1}
-            color={bitcoinGold}
-            distance={20}
             castShadow
           />
         </group>
 
         {/* Front side details with enhanced shadows */}
         <group position={[0, 0, 0.16]}>
-          {/* Add dedicated logo lighting */}
+          {/* Optimized lighting - single spotlight for front */}
           <spotLight
-            position={[0, 0, 1]}
+            position={[0, 0, 2]}
             angle={0.6}
             penumbra={0.5}
-            intensity={2}
-            color="#FFFFFF"
+            intensity={2.5}
+            color={bitcoinGold}
             distance={5}
             castShadow
           />
           
-          {/* Rim light */}
-          <pointLight 
-            position={[3, 0, 1]} 
-            intensity={0.8}
-            color="#FFFFFF"
-            distance={5}
-            castShadow
-          />
-          {/* Main front light */}
-          <pointLight 
-            position={[0, 0, 2]} 
-            intensity={1.5}
-            color={bitcoinGold}
-            distance={3}
-            castShadow
-          />
           <BitcoinLogoTexture />
           <CircularText />
           {/* Inner ring with shadow */}
@@ -344,33 +319,17 @@ function EnhancedBitcoinModel() {
 
         {/* Back side details with enhanced shadows */}
         <group position={[0, 0, -0.16]} rotation={[0, Math.PI, 0]}>
-          {/* Add dedicated logo lighting for back side */}
+          {/* Optimized lighting - single spotlight for back */}
           <spotLight
-            position={[0, 0, 1]}
+            position={[0, 0, 2]}
             angle={0.6}
             penumbra={0.5}
-            intensity={2}
-            color="#FFFFFF"
+            intensity={2.5}
+            color={bitcoinGold}
             distance={5}
             castShadow
           />
           
-          {/* Back rim light */}
-          <pointLight 
-            position={[-3, 0, -1]} 
-            intensity={0.5}
-            color="#FFFFFF"
-            distance={5}
-            castShadow
-          />
-          {/* Main back light */}
-          <pointLight 
-            position={[0, 0, -2]} 
-            intensity={1}
-            color={bitcoinGold}
-            distance={3}
-            castShadow
-          />
           <BitcoinLogoTexture />
           <CircularText />
           {/* Inner ring with shadow */}
@@ -402,19 +361,7 @@ function EnhancedBitcoinModel() {
         {/* Enhanced edge details with shadows */}
         <CoinEdgeDetail />
 
-        {/* Enhanced scene lighting */}
-        <pointLight 
-          position={[2, 2, 2]} 
-          intensity={0.5}
-          color="#FFFFFF"
-          castShadow
-        />
-        <pointLight 
-          position={[-2, -2, -2]} 
-          intensity={0.5}
-          color="#FFFFFF"
-          castShadow
-        />
+        {/* Removed redundant scene lighting - using Environment and main lights */}
 
         <Sparkles
           count={20}
